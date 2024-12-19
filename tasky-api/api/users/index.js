@@ -13,17 +13,26 @@ router.get('/', async (req, res) => {
 // register(Create)/Authenticate User
 router.post('/', async (req, res) => {
     if (req.query.action === 'register') {  //if action is 'register' then save to DB
-        await User(req.body).save();
-        res.status(201).json({
-            code: 201,
-            msg: 'Successful created new user.',
-        });
+        const { username, password } = req.body;
+        if (!username || !password) {
+            return res.status(400).json({
+                code: 400,
+                msg: 'Username and password are required.',
+            });
+        }
+        else {
+            await User(req.body).save();
+            res.status(201).json({
+                code: 201,
+                msg: 'Successful created new user.',
+            });
+        }
     }
     else {  //Must be an authenticate then!!! Query the DB and check if there's a match
         const user = await User.findOne(req.body);
         if (!user) {
             return res.status(401).json({ code: 401, msg: 'Authentication failed' });
-        }else{
+        } else {
             return res.status(200).json({ code: 200, msg: "Authentication Successful", token: 'TEMPORARY_TOKEN' });
         }
     }
@@ -36,7 +45,7 @@ router.put('/:id', async (req, res) => {
         _id: req.params.id,
     }, req.body);
     if (result.matchedCount) {
-        res.status(200).json({ code:200, msg: 'User Updated Sucessfully' });
+        res.status(200).json({ code: 200, msg: 'User Updated Sucessfully' });
     } else {
         res.status(404).json({ code: 404, msg: 'Unable to Update User' });
     }
